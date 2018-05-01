@@ -1136,6 +1136,9 @@ from .tvc import (
     TVCIE,
     TVCArticleIE,
 )
+from .tveast import (
+    tveastIE,
+)
 from .tvigle import TvigleIE
 from .tvland import TVLandIE
 from .tvn24 import TVN24IE
