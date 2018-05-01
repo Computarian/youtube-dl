@@ -129,6 +129,12 @@ def parseOpts(overrideArguments=None):
     parser = optparse.OptionParser(**compat_kwargs(kw))
 
     general = optparse.OptionGroup(parser, 'General Options')
+
+    # exciting new output error option
+    general.add_option(
+        '--oe','--output_error',
+        action='store_true', dest='output_error', help='outputs errors to a text file')
+
     general.add_option(
         '-h', '--help',
         action='help',
