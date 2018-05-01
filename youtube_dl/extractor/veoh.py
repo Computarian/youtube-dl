@@ -103,32 +103,13 @@ class VeohIE(InfoExtractor):
         #pattern = r'"https?://(?:www\.)?veoh\.com/(?:watch|embed|iphone/#_Watch)/(?P<id>(?:v|e|yapi-)[\da-zA-Z]+)"'
         pattern = r'"(?P<url>https?://www.veoh.com/watch/(v|e|yapi-)[\da-zA-Z]+)"'
 
-        all_buckets = re.findall(
-            # r'class="thumbWrapper',
-            #pattern = r'https?://(?:www\.)?veoh\.com/(?:watch|embed|iphone/#_Watch)/(?P<id>(?:v|e|yapi-)[\da-zA-Z]+)'
-            pattern,
-            webpage)
-            #r'https?://(?:www\.)?veoh\.com/(?:watch|embed|iphone/#_Watch)/(?P<id>(?:v|e|yapi-)[\da-zA-Z]+)'
-            #,webpage)
+        all_buckets = re.findall(pattern,webpage)  
         entries = []
-        for bucket in all_buckets:
-            print bucket[0]
-        
-        
+   
         for link in all_buckets:
-            #bd = json.loads(bd_json)
-            #video = bd.get('video') or bd.get('progload_video')
+    
             mobj = re.match(self._VALID_URL, link[0])
             video_id = mobj.group('id')
-            #mylink = link[0]
-            '''
-            if not link:
-                print("no video here")
-                continue
-            '''
-            
-            #video_id = mobj.group('id')
-            #vid = self._extract_video(mylink)
             entries.append(video_id)
         entries = dict.fromkeys(entries).keys()
   
