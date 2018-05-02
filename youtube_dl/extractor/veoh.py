@@ -12,7 +12,8 @@ from ..utils import (
 
 
 class VeohIE(InfoExtractor):
-    _VALID_URL = r'https?://(?:www\.)?veoh\.com/(?:watch|embed|iphone/#_Watch)/(?P<id>(?:v|e|yapi-)[\da-zA-Z]+)'
+    _VALID_URL = r'https?://(?:www\.)?veoh\.com/(?:watch|embed|list|iphone/#_Watch)/((?P<id>(?:v|e|yapi-)[\da-zA-Z]+)|c/[\da-zA-Z]+)'
+    #changed syntax to support playlist url
 
     _TESTS = [{
         'url': 'http://www.veoh.com/watch/v56314296nk7Zdmz3',
@@ -92,39 +93,70 @@ class VeohIE(InfoExtractor):
             'formats': self._extract_formats(source),
         }
 
+
     def _real_extract(self, url):
         mobj = re.match(self._VALID_URL, url)
         video_id = mobj.group('id')
 
-        if video_id.startswith('v'):
-            rsp = self._download_xml(
-                r'http://www.veoh.com/api/findByPermalink?permalink=%s' % video_id, video_id, 'Downloading video XML')
-            stat = rsp.get('stat')
-            if stat == 'ok':
-                return self._extract_video(rsp.find('./videoList/video'))
-            elif stat == 'fail':
-                raise ExtractorError(
-                    '%s said: %s' % (self.IE_NAME, rsp.find('./errorList/error').get('errorMessage')), expected=True)
+        playlist_id = self._match_id(url)
+        webpage = self._download_webpage(url, playlist_id)
+        #pattern = r'"https?://(?:www\.)?veoh\.com/(?:watch|embed|iphone/#_Watch)/(?P<id>(?:v|e|yapi-)[\da-zA-Z]+)"'
+        pattern = r'"(?P<url>https?://www.veoh.com/watch/(v|e|yapi-)[\da-zA-Z]+)"'
 
-        webpage = self._download_webpage(url, video_id)
-        age_limit = 0
-        if 'class="adultwarning-container"' in webpage:
-            self.report_age_confirmation()
-            age_limit = 18
-            request = sanitized_Request(url)
-            request.add_header('Cookie', 'confirmedAdult=true')
-            webpage = self._download_webpage(request, video_id)
+        all_buckets = re.findall(pattern,webpage)  
+        entries = []
+   
+        for link in all_buckets:
+    
+            mobj = re.match(self._VALID_URL, link[0])
+            video_id = mobj.group('id')
+            entries.append(video_id)
+        entries = dict.fromkeys(entries).keys()
+  
+        #video_id = entries[3] 
+        vidlist = []
+        for entry in entries:
+            video_id = entry
+            if video_id.startswith('v'):
+                rsp = self._download_xml(
+                    r'http://www.veoh.com/api/findByPermalink?permalink=%s' % video_id, video_id, 'Downloading video XML')
+                stat = rsp.get('stat')
+                if stat == 'ok':
+                    vidlist.append(self._extract_video(rsp.find('./videoList/video')))
+                elif stat == 'fail':
+                    raise ExtractorError(
+                        '%s said: %s' % (self.IE_NAME, rsp.find('./errorList/error').get('errorMessage')), expected=True)
+            '''
+            webpage = self._download_webpage(url, video_id)
+            age_limit = 0
+            if 'class="adultwarning-container"' in webpage:
+                self.report_age_confirmation()
+                age_limit = 18
+                request = sanitized_Request(url)
+                request.add_header('Cookie', 'confirmedAdult=true')
+                webpage = self._download_webpage(request, video_id)
 
-        m_youtube = re.search(r'http://www\.youtube\.com/v/(.*?)(\&|"|\?)', webpage)
-        if m_youtube is not None:
-            youtube_id = m_youtube.group(1)
-            self.to_screen('%s: detected Youtube video.' % video_id)
-            return self.url_result(youtube_id, 'Youtube')
+            m_youtube = re.search(r'http://www\.youtube\.com/v/(.*?)(\&|"|\?)', webpage)
+            if m_youtube is not None:
+                youtube_id = m_youtube.group(1)
+                self.to_screen('%s: detected Youtube video.' % video_id)
+                return self.url_result(youtube_id, 'Youtube')
 
-        info = json.loads(
-            self._search_regex(r'videoDetailsJSON = \'({.*?})\';', webpage, 'info').replace('\\\'', '\''))
+            info = json.loads(
+                self._search_regex(r'videoDetailsJSON = \'({.*?})\';', webpage, 'info').replace('\\\'', '\''))
 
-        video = self._extract_video(info)
-        video['age_limit'] = age_limit
+            video = self._extract_video(info)
+            video['age_limit'] = age_limit
+            vidlist.append(video)
+            print("1")
+            '''
 
-        return video
+        return {
+            '_type': 'playlist',
+            'id': playlist_id,
+            'title': 'title',
+            'description': 'desc',
+            'entries': vidlist,
+        }
+
+
