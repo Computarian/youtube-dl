@@ -99,6 +99,10 @@ def _real_main(argv=None):
     _enc = preferredencoding()
     all_urls = [url.decode(_enc, 'ignore') if isinstance(url, bytes) else url for url in all_urls]
 
+    # If this output_error option is on, outputs error messages into a text file. Currently just a print statement
+    if opts.output_error is not None:
+        print ("The output_error option is on")
+
     if opts.list_extractors:
         for ie in list_extractors(opts.age_limit):
             write_string(ie.IE_NAME + (' (CURRENTLY BROKEN)' if not ie._WORKING else '') + '\n', out=sys.stdout)

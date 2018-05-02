@@ -737,9 +737,27 @@ class YoutubeDLError(Exception):
 class ExtractorError(YoutubeDLError):
     """Error during info extraction."""
 
+    # opens text file to write errors to
+    open('error_file.txt', 'w').close()
+
     def __init__(self, msg, tb=None, expected=False, cause=None, video_id=None):
         """ tb, if given, is the original traceback (so that it can be printed out).
         If expected is set, this is a normal error message and most likely not a bug in youtube-dl.
+        """
+
+        # outputs errors to text file
+        error_file = open('error_file.txt','a')
+        error_file.write(msg + '\n')
+        error_file.close()
+
+        """"
+        # outputs urls in error message to text file, not all error messages have urls,
+        # so outputting error message is safer
+        error_url = re.findall('(?:(?:https?|ftp):\/\/)?[\w/\-?=%.]+\.[\w/\-?=%.]+', msg)
+        print(error_url)
+        error_file = open('error_file.txt','a')
+        error_file.write(error_url[0] + '\n')
+        error_file.close()
         """
 
         if sys.exc_info()[0] in (compat_urllib_error.URLError, socket.timeout, UnavailableVideoError):
