@@ -1085,6 +1085,9 @@ from .thisav import ThisAVIE
 from .thisoldhouse import ThisOldHouseIE
 from .threeqsdn import ThreeQSDNIE
 from .tinypic import TinyPicIE
+
+from .tirerack import TireRackIE
+
 from .tmz import (
     TMZIE,
     TMZArticleIE,
@@ -1132,6 +1135,9 @@ from .tvanouvelles import (
 from .tvc import (
     TVCIE,
     TVCArticleIE,
+)
+from .tveast import (
+    tveastIE,
 )
 from .tvigle import TvigleIE
 from .tvland import TVLandIE
